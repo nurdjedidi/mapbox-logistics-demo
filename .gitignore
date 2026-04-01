@@ -4,6 +4,7 @@
 /node_modules/
 CLAUDE.md
 context.md
+Dockerfile
 
 # React Router
 /.react-router/
