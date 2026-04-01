@@ -2,6 +2,8 @@
 .env
 .qwen/
 /node_modules/
+CLAUDE.md
+context.md
 
 # React Router
 /.react-router/
