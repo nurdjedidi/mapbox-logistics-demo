@@ -6,6 +6,7 @@ import type { Dossier, DocumentStatut } from "~/types";
 interface RightPanelProps {
   dossier: Dossier;
   onClose: () => void;
+  isMobile?: boolean;
 }
 
 function formatDate(iso: string): string {
@@ -56,16 +57,23 @@ Merci de nous transmettre ce${plural ? "s documents" : " document"} en urgence a
 Cordialement`;
 }
 
-const glassPanel = {
+const desktopGlass = {
   background: "linear-gradient(180deg, rgba(8,16,36,0.92) 0%, rgba(4,10,24,0.95) 100%)",
   backdropFilter: "blur(20px) saturate(180%)",
   borderLeft: "1px solid rgba(255,255,255,0.07)",
   boxShadow: "-4px 0 32px rgba(0,0,0,0.5)",
 };
 
+const mobileGlass = {
+  background: "linear-gradient(180deg, rgba(8,16,36,0.97) 0%, rgba(4,10,24,0.99) 100%)",
+  backdropFilter: "blur(24px) saturate(180%)",
+  borderTop: "1px solid rgba(255,255,255,0.1)",
+  boxShadow: "0 -8px 40px rgba(0,0,0,0.7)",
+};
+
 const sectionDivider = { borderBottom: "1px solid rgba(255,255,255,0.05)" };
 
-export default function RightPanel({ dossier, onClose }: RightPanelProps) {
+export default function RightPanel({ dossier, onClose, isMobile = false }: RightPanelProps) {
   const [copied, setCopied] = useState<string | null>(null);
 
   const copyTemplate = (key: string, text: string) => {
@@ -80,15 +88,8 @@ export default function RightPanel({ dossier, onClose }: RightPanelProps) {
   const docsTotal = dossier.documents.length;
   const progress = Math.round((docsOk / docsTotal) * 100);
 
-  return (
-    <motion.div
-      initial={{ x: "100%", opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: "100%", opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute top-14 right-0 bottom-0 w-88 z-10 flex flex-col overflow-hidden"
-      style={{ ...glassPanel, width: "22rem" }}
-    >
+  const content = (
+    <>
       <div className="flex items-start justify-between px-5 py-4" style={sectionDivider}>
         <div>
           <span className="font-mono text-sm font-bold text-white tracking-wide">{dossier.id}</span>
@@ -216,6 +217,34 @@ export default function RightPanel({ dossier, onClose }: RightPanelProps) {
           </div>
         )}
       </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", stiffness: 320, damping: 32 }}
+        className="fixed bottom-0 left-0 right-0 z-40 flex flex-col rounded-t-2xl overflow-hidden"
+        style={{ ...mobileGlass, height: "80vh" }}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "100%", opacity: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="absolute top-14 right-0 bottom-0 z-10 flex flex-col overflow-hidden"
+      style={{ ...desktopGlass, width: "22rem" }}
+    >
+      {content}
     </motion.div>
   );
 }

@@ -86,7 +86,7 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at top, #0d1f3c 0%, #020617 60%)" }}>
-      <nav className="sticky top-0 z-10 flex items-center justify-between px-8 h-14"
+      <nav className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-8 h-14"
         style={{ background: "rgba(2,6,23,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors">
@@ -106,9 +106,9 @@ export default function Analytics() {
         <span className="text-slate-600 text-xs font-mono">Mars – Avril 2026</span>
       </nav>
 
-      <div className="px-8 py-8 max-w-7xl mx-auto space-y-6">
+      <div className="px-4 sm:px-8 py-6 sm:py-8 max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <KpiCard icon={<Ship className="w-4 h-4" />} label="Dossiers actifs" value={totalDossiers}
             sub={`${enTransit} en transit · ${auPort} au port`} color={PALETTE.blue} dimColor={PALETTE.blueDim} />
           <KpiCard icon={<CheckCircle2 className="w-4 h-4" />} label="Dossiers dédouanés" value={dedouane}
@@ -119,8 +119,8 @@ export default function Analytics() {
             sub={`${docsAttente} en attente`} color={docsManquants > 0 ? PALETTE.red : PALETTE.green} dimColor={docsManquants > 0 ? PALETTE.redDim : PALETTE.greenDim} />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2" style={glass}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="md:col-span-2" style={glass}>
             <SectionLabel>Documents par dossier (timeline ETA)</SectionLabel>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={etaTimeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -178,7 +178,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
           <div style={glass}>
             <SectionLabel>Dossiers par destination</SectionLabel>
             <ResponsiveContainer width="100%" height={180}>
@@ -249,7 +249,7 @@ export default function Analytics() {
 
         <div style={glass}>
           <SectionLabel>Flux d'alertes critiques</SectionLabel>
-          <div className="grid grid-cols-3 gap-3 mt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-1">
             {dossiers
               .filter((d) => d.alertes.length > 0)
               .flatMap((d) => d.alertes.map((a) => ({ ...a, dossierId: d.id, dest: `${d.origine.nom} → ${d.destination.nom}` })))

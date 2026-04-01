@@ -5,6 +5,7 @@ import LeftPanel from "~/components/LeftPanel";
 import RightPanel from "~/components/RightPanel";
 import MapView from "~/components/MapView";
 import { dossiers } from "~/data/dossiers";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
 export function meta() {
   return [
@@ -23,14 +24,27 @@ export function links() {
 }
 
 export default function Home() {
+  const isMobile = useIsMobile();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
 
   useEffect(() => {
     document.body.classList.add("layout-map");
     return () => document.body.classList.remove("layout-map");
   }, []);
 
+  // Close left panel by default on mobile
+  useEffect(() => {
+    if (isMobile) setLeftPanelOpen(false);
+    else setLeftPanelOpen(true);
+  }, [isMobile]);
+
   const selectedDossier = dossiers.find((d) => d.id === selectedId) ?? null;
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+    if (isMobile) setLeftPanelOpen(false);
+  };
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-slate-900">
@@ -39,14 +53,39 @@ export default function Home() {
         selectedId={selectedId}
         onSelectDossier={setSelectedId}
       />
-      <Header dossiers={dossiers} />
-      <LeftPanel dossiers={dossiers} selectedId={selectedId} onSelect={setSelectedId} />
+      <Header
+        dossiers={dossiers}
+        panelOpen={leftPanelOpen}
+        onTogglePanel={() => setLeftPanelOpen((v) => !v)}
+      />
+      <AnimatePresence>
+        {isMobile && (leftPanelOpen || !!selectedDossier) && (
+          <div
+            key="backdrop"
+            className="fixed inset-0 z-20 bg-black/50"
+            onClick={() => { setLeftPanelOpen(false); setSelectedId(null); }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {leftPanelOpen && (
+          <LeftPanel
+            key="left-panel"
+            dossiers={dossiers}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            onClose={() => setLeftPanelOpen(false)}
+            isMobile={isMobile}
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {selectedDossier && (
           <RightPanel
             key={selectedDossier.id}
             dossier={selectedDossier}
             onClose={() => setSelectedId(null)}
+            isMobile={isMobile}
           />
         )}
       </AnimatePresence>
