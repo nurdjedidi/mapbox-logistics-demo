@@ -70,7 +70,7 @@ export default function Header({ dossiers, showAnalyticsLink = true, panelOpen, 
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
             <User className="w-3.5 h-3.5 text-slate-300" />
           </div>
-          <span className="hidden sm:inline text-slate-300 text-sm">Othmane</span>
+          <span className="hidden sm:inline text-slate-300 text-sm">User</span>
         </div>
       </div>
     </header>
