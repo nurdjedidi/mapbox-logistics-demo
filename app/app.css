@@ -7,9 +7,15 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  @apply bg-slate-900;
+  color-scheme: dark;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+body.layout-map {
+  height: 100%;
+  overflow: hidden;
+}
+
+body.layout-map #root {
+  height: 100%;
 }
