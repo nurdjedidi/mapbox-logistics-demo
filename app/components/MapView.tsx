@@ -13,66 +13,69 @@ interface MapViewProps {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 
-function getMarkerColor(dossier: Dossier): string {
-  if (dossier.alertes.some((a) => a.severite === "haute")) return "#dc2626";
-  if (dossier.alertes.some((a) => a.severite === "moyenne")) return "#d97706";
-  if (dossier.statut === "dedouane" || dossier.statut === "livre") return "#059669";
+// Default center/zoom — never changes after mount (avoids package re-init)
+const INITIAL_CENTER: [number, number] = [-1, 39];
+const INITIAL_ZOOM = 4.2;
+
+function getMarkerColor(d: Dossier) {
+  if (d.alertes.some((a) => a.severite === "haute")) return "#dc2626";
+  if (d.alertes.some((a) => a.severite === "moyenne")) return "#d97706";
+  if (d.statut === "dedouane" || d.statut === "livre") return "#059669";
   return "#3b82f6";
 }
 
-function getRouteColor(dossier: Dossier): string {
-  if (dossier.alertes.some((a) => a.severite === "haute")) return "#ef4444";
-  if (dossier.alertes.some((a) => a.severite === "moyenne")) return "#f59e0b";
-  if (dossier.statut === "dedouane") return "#10b981";
+function getRouteColor(d: Dossier) {
+  if (d.alertes.some((a) => a.severite === "haute")) return "#ef4444";
+  if (d.alertes.some((a) => a.severite === "moyenne")) return "#f59e0b";
+  if (d.statut === "dedouane") return "#10b981";
   return "#60a5fa";
 }
 
 export default function MapView({ dossiers, selectedId, onSelectDossier, center, zoom }: MapViewProps) {
-  const mapInstanceRef = useRef<MapboxMap | null>(null);
+  const mapRef = useRef<MapboxMap | null>(null);
   const markersRef = useRef<Map<string, { element: HTMLElement; update: (selected: boolean) => void }>>(new Map());
   const mapboxMarkersRef = useRef<Marker[]>([]);
   const layerIdsRef = useRef<string[]>([]);
   const sourceIdsRef = useRef<string[]>([]);
+  // Keep latest values accessible inside stable callbacks
+  const dossiersRef = useRef(dossiers);
   const onSelectRef = useRef(onSelectDossier);
   const [mapLoaded, setMapLoaded] = useState(false);
 
+  dossiersRef.current = dossiers;
   onSelectRef.current = onSelectDossier;
 
-  const populateMap = useCallback((map: MapboxMap, data: Dossier[]) => {
+  const clearMap = (map: MapboxMap) => {
+    layerIdsRef.current.forEach((id) => {
+      try { map.removeLayer(id); } catch { /* gone */ }
+    });
+    sourceIdsRef.current.forEach((id) => {
+      try { map.removeSource(id); } catch { /* gone */ }
+    });
+    mapboxMarkersRef.current.forEach((m) => m.remove());
+    layerIdsRef.current = [];
+    sourceIdsRef.current = [];
+    mapboxMarkersRef.current = [];
+    markersRef.current.clear();
+  };
+
+  const populateMap = (map: MapboxMap, data: Dossier[]) => {
     const addedPorts = new Set<string>();
 
     data.forEach((dossier) => {
       const { completed, remaining } = splitRouteAtProgress(dossier.route, dossier.progress);
-
       const srcId = `route-${dossier.id}`;
-      const srcRemId = `route-remain-${dossier.id}`;
-      const layerSolid = `route-solid-${dossier.id}`;
-      const layerDashed = `route-dashed-${dossier.id}`;
+      const srcRemId = `route-rem-${dossier.id}`;
+      const layerSolid = `layer-solid-${dossier.id}`;
+      const layerDashed = `layer-dashed-${dossier.id}`;
 
-      map.addSource(srcId, {
-        type: "geojson",
-        data: { type: "Feature", geometry: { type: "LineString", coordinates: completed }, properties: {} },
-      });
-      map.addLayer({
-        id: layerSolid,
-        type: "line",
-        source: srcId,
-        paint: { "line-color": getRouteColor(dossier), "line-width": 2, "line-opacity": 0.8 },
-      });
+      map.addSource(srcId, { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: completed }, properties: {} } });
+      map.addLayer({ id: layerSolid, type: "line", source: srcId, paint: { "line-color": getRouteColor(dossier), "line-width": 2, "line-opacity": 0.8 } });
+      map.addSource(srcRemId, { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: remaining }, properties: {} } });
+      map.addLayer({ id: layerDashed, type: "line", source: srcRemId, paint: { "line-color": getRouteColor(dossier), "line-width": 1.5, "line-opacity": 0.35, "line-dasharray": [3, 3] } });
 
-      map.addSource(srcRemId, {
-        type: "geojson",
-        data: { type: "Feature", geometry: { type: "LineString", coordinates: remaining }, properties: {} },
-      });
-      map.addLayer({
-        id: layerDashed,
-        type: "line",
-        source: srcRemId,
-        paint: { "line-color": getRouteColor(dossier), "line-width": 1.5, "line-opacity": 0.35, "line-dasharray": [3, 3] },
-      });
-
-      sourceIdsRef.current.push(srcId, srcRemId);
       layerIdsRef.current.push(layerSolid, layerDashed);
+      sourceIdsRef.current.push(srcId, srcRemId);
 
       const color = getMarkerColor(dossier);
       const { element, update } = createMarkerElement(color, {
@@ -89,85 +92,64 @@ export default function MapView({ dossiers, selectedId, onSelectDossier, center,
 
       markersRef.current.set(dossier.id, { element, update });
 
-      const addPort = (lng: number, lat: number) => {
+      const addPortMarker = (lng: number, lat: number) => {
         const key = `${lng},${lat}`;
         if (addedPorts.has(key)) return;
         addedPorts.add(key);
-        const portEl = document.createElement("div");
-        portEl.style.cssText = `
-          width: 8px; height: 8px;
-          background: #94a3b8;
-          border-radius: 50%;
-          border: 1.5px solid rgba(255,255,255,0.4);
-        `;
+        const el = document.createElement("div");
+        el.style.cssText = "width:8px;height:8px;background:#94a3b8;border-radius:50%;border:1.5px solid rgba(255,255,255,0.4);";
         import("mapbox-gl").then(({ default: mapboxgl }) => {
-          const m = new mapboxgl.Marker({ element: portEl, anchor: "center" })
-            .setLngLat([lng, lat])
-            .addTo(map);
+          const m = new mapboxgl.Marker({ element: el, anchor: "center" }).setLngLat([lng, lat]).addTo(map);
           mapboxMarkersRef.current.push(m);
         });
       };
 
-      addPort(dossier.destination.lng, dossier.destination.lat);
-      addPort(dossier.origine.lng, dossier.origine.lat);
+      addPortMarker(dossier.destination.lng, dossier.destination.lat);
+      addPortMarker(dossier.origine.lng, dossier.origine.lat);
     });
-  }, []);
+  };
 
-  const clearMap = useCallback((map: MapboxMap) => {
-    try {
-      layerIdsRef.current.forEach((id) => {
-        try { map.removeLayer(id); } catch { /* already removed */ }
-      });
-      sourceIdsRef.current.forEach((id) => {
-        try { map.removeSource(id); } catch { /* already removed */ }
-      });
-    } catch { /* style not loaded yet */ }
-    mapboxMarkersRef.current.forEach((m) => m.remove());
-    layerIdsRef.current = [];
-    sourceIdsRef.current = [];
-    mapboxMarkersRef.current = [];
-    markersRef.current.clear();
-  }, []);
-
-  const initializedRef = useRef(false);
-
+  // Stable callback — never recreated, reads dossiers from ref
   const handleMapInit = useCallback((map: MapboxMap) => {
-    mapInstanceRef.current = map;
-    populateMap(map, dossiers);
-    initializedRef.current = true;
-  }, [dossiers, populateMap]);
+    mapRef.current = map;
+    populateMap(map, dossiersRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — stable for the lifetime of the component
 
+  // Stable callback
+  const handleMapLoaded = useCallback(() => {
+    setMapLoaded(true);
+  }, []);
+
+  // When dossiers change (mode switch): clear + repopulate + flyTo
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !initializedRef.current) return;
+    const map = mapRef.current;
+    if (!map) return;
     clearMap(map);
     populateMap(map, dossiers);
     if (center && zoom != null) {
-      map.flyTo({ center, zoom, duration: 1800, essential: true });
+      map.flyTo({ center, zoom, duration: 1600, essential: true });
     }
-  }, [dossiers, center, zoom, clearMap, populateMap]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dossiers]);
 
+  // selectedId highlight
   useEffect(() => {
-    markersRef.current.forEach(({ update }, id) => {
-      update(id === selectedId);
-    });
+    markersRef.current.forEach(({ update }, id) => update(id === selectedId));
   }, [selectedId]);
 
-  if (!MAPBOX_TOKEN) {
-    return null;
-  }
+  if (!MAPBOX_TOKEN) return null;
 
   return (
     <div className="absolute inset-0">
       <MapViewBase
         accessToken={MAPBOX_TOKEN}
         className="w-full h-full"
-        center={center}
-        zoom={zoom}
-        onMapLoaded={() => setMapLoaded(true)}
+        center={INITIAL_CENTER}
+        zoom={INITIAL_ZOOM}
+        onMapLoaded={handleMapLoaded}
         onMapInit={handleMapInit}
       />
-
       {!mapLoaded && (
         <div className="absolute inset-0 bg-slate-900 flex items-center justify-center pointer-events-none">
           <div className="flex flex-col items-center gap-3">

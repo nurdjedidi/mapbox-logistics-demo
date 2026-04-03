@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { dossiers as medDossiers } from "~/data/dossiers";
 import { dossiersComores } from "~/data/comores";
+import { dossiersMalacca } from "~/data/malacca";
 import type { Dossier } from "~/types";
 
-export type DemoMode = "mediterranee" | "comores";
+export type DemoMode = "mediterranee" | "comores" | "malacca";
 
 interface DemoModeState {
   mode: DemoMode;
@@ -23,6 +24,11 @@ const configs: Record<DemoMode, { dossiers: Dossier[]; center: [number, number];
     dossiers: dossiersComores,
     center: [42, 8],
     zoom: 3.2,
+  },
+  malacca: {
+    dossiers: dossiersMalacca,
+    center: [110, 12],
+    zoom: 3.6,
   },
 };
 

@@ -5,8 +5,10 @@ import LeftPanel from "~/components/LeftPanel";
 import RightPanel from "~/components/RightPanel";
 import MapView from "~/components/MapView";
 import ModeSwitch from "~/components/ModeSwitch";
+import GeofenceToasts from "~/components/GeofenceToasts";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { useDemoMode } from "~/hooks/useDemoMode";
+import { useGeofencing } from "~/hooks/useGeofencing";
 
 export function meta() {
   return [
@@ -29,6 +31,7 @@ export default function Home() {
   const { mode, setMode, dossiers, mapCenter, mapZoom } = useDemoMode();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const { alerts, dismiss } = useGeofencing(dossiers);
 
   useEffect(() => {
     document.body.classList.add("layout-map");
@@ -66,6 +69,7 @@ export default function Home() {
         onTogglePanel={() => setLeftPanelOpen((v) => !v)}
       />
       <ModeSwitch mode={mode} onSwitch={setMode} />
+      <GeofenceToasts alerts={alerts} onDismiss={dismiss} isMobile={isMobile} />
       <AnimatePresence>
         {isMobile && (leftPanelOpen || !!selectedDossier) && (
           <div

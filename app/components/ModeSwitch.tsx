@@ -16,18 +16,9 @@ export default function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
         boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
       }}
     >
-      <ModeButton
-        active={mode === "mediterranee"}
-        onClick={() => onSwitch("mediterranee")}
-        label="Méditerranée"
-        flag="🇲🇦"
-      />
-      <ModeButton
-        active={mode === "comores"}
-        onClick={() => onSwitch("comores")}
-        label="Comores"
-        flag="🇰🇲"
-      />
+      <ModeButton active={mode === "mediterranee"} onClick={() => onSwitch("mediterranee")} label="Méditerranée" flag="🇲🇦" />
+      <ModeButton active={mode === "comores"} onClick={() => onSwitch("comores")} label="Comores" flag="🇰🇲" />
+      <ModeButton active={mode === "malacca"} onClick={() => onSwitch("malacca")} label="Malacca" flag="🇸🇬" />
     </div>
   );
 }
