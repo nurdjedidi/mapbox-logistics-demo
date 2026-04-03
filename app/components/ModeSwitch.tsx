@@ -21,7 +21,7 @@ export default function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
       <div className="flex items-center gap-0.5">
         <ModeButton active={mode === "mediterranee"} onClick={() => onSwitch("mediterranee")} label="Méditerranée" flag="🇲🇦" />
         <ModeButton active={mode === "comores"} onClick={() => onSwitch("comores")} label="Comores" flag="🇰🇲" />
-        <ModeButton active={mode === "malacca"} onClick={() => onSwitch("malacca")} label="Malacca" flag="🇸🇬" />
+        <ModeButton active={mode === "malacca"} onClick={() => onSwitch("malacca")} label="Malacca" flag="🇲🇾" />
       </div>
     </div>
   );
