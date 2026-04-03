@@ -12,7 +12,7 @@ import { useGeofencing } from "~/hooks/useGeofencing";
 
 export function meta() {
   return [
-    { title: "TransitTrack — Dashboard" },
+    { title: "ImpactMap — Dashboard" },
     { name: "description", content: "Suivi conteneurs et camions en temps réel" },
   ];
 }
