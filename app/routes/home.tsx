@@ -4,8 +4,9 @@ import Header from "~/components/Header";
 import LeftPanel from "~/components/LeftPanel";
 import RightPanel from "~/components/RightPanel";
 import MapView from "~/components/MapView";
-import { dossiers } from "~/data/dossiers";
+import ModeSwitch from "~/components/ModeSwitch";
 import { useIsMobile } from "~/hooks/useIsMobile";
+import { useDemoMode } from "~/hooks/useDemoMode";
 
 export function meta() {
   return [
@@ -25,6 +26,7 @@ export function links() {
 
 export default function Home() {
   const isMobile = useIsMobile();
+  const { mode, setMode, dossiers, mapCenter, mapZoom } = useDemoMode();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
 
@@ -33,11 +35,14 @@ export default function Home() {
     return () => document.body.classList.remove("layout-map");
   }, []);
 
-  // Close left panel by default on mobile
   useEffect(() => {
     if (isMobile) setLeftPanelOpen(false);
     else setLeftPanelOpen(true);
   }, [isMobile]);
+
+  useEffect(() => {
+    setSelectedId(null);
+  }, [mode]);
 
   const selectedDossier = dossiers.find((d) => d.id === selectedId) ?? null;
 
@@ -52,12 +57,15 @@ export default function Home() {
         dossiers={dossiers}
         selectedId={selectedId}
         onSelectDossier={setSelectedId}
+        center={mapCenter}
+        zoom={mapZoom}
       />
       <Header
         dossiers={dossiers}
         panelOpen={leftPanelOpen}
         onTogglePanel={() => setLeftPanelOpen((v) => !v)}
       />
+      <ModeSwitch mode={mode} onSwitch={setMode} />
       <AnimatePresence>
         {isMobile && (leftPanelOpen || !!selectedDossier) && (
           <div
