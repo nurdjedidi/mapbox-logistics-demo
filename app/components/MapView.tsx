@@ -13,7 +13,6 @@ interface MapViewProps {
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 
-// Default center/zoom — never changes after mount (avoids package re-init)
 const INITIAL_CENTER: [number, number] = [-1, 39];
 const INITIAL_ZOOM = 4.2;
 
@@ -37,7 +36,6 @@ export default function MapView({ dossiers, selectedId, onSelectDossier, center,
   const mapboxMarkersRef = useRef<Marker[]>([]);
   const layerIdsRef = useRef<string[]>([]);
   const sourceIdsRef = useRef<string[]>([]);
-  // Keep latest values accessible inside stable callbacks
   const dossiersRef = useRef(dossiers);
   const onSelectRef = useRef(onSelectDossier);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -109,19 +107,16 @@ export default function MapView({ dossiers, selectedId, onSelectDossier, center,
     });
   };
 
-  // Stable callback — never recreated, reads dossiers from ref
   const handleMapInit = useCallback((map: MapboxMap) => {
     mapRef.current = map;
     populateMap(map, dossiersRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // intentionally empty — stable for the lifetime of the component
+  }, []);
 
-  // Stable callback
   const handleMapLoaded = useCallback(() => {
     setMapLoaded(true);
   }, []);
 
-  // When dossiers change (mode switch): clear + repopulate + flyTo
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -133,7 +128,6 @@ export default function MapView({ dossiers, selectedId, onSelectDossier, center,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dossiers]);
 
-  // selectedId highlight
   useEffect(() => {
     markersRef.current.forEach(({ update }, id) => update(id === selectedId));
   }, [selectedId]);
