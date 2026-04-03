@@ -39,7 +39,7 @@ export default function Header({ dossiers, showAnalyticsLink = true, panelOpen, 
           style={{ background: "linear-gradient(135deg, #1d4ed8, #2563eb)", boxShadow: "0 2px 8px rgba(37,99,235,0.5)" }}>
           <Ship className="w-4 h-4 text-white" />
         </div>
-        <span className="text-white font-bold text-base tracking-tight">TransitTrack</span>
+        <span className="text-white font-bold text-base tracking-tight">ImpactMap</span>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-5">
