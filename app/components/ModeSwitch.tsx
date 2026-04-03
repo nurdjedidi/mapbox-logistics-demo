@@ -8,7 +8,7 @@ interface ModeSwitchProps {
 export default function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
   return (
     <div
-      className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 p-0.5 rounded-full sm:bottom-6"
+      className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 p-0.5 rounded-full sm:bottom-6"
       style={{
         background: "rgba(2,6,23,0.75)",
         backdropFilter: "blur(16px)",
