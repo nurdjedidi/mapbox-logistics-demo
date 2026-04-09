@@ -19,24 +19,24 @@ export default function ModeSwitch({ mode, onSwitch }: ModeSwitchProps) {
       }}
     >
       <div className="flex items-center gap-0.5">
-        <ModeButton active={mode === "mediterranee"} onClick={() => onSwitch("mediterranee")} label="Méditerranée" flag="🇲🇦" />
-        <ModeButton active={mode === "comores"} onClick={() => onSwitch("comores")} label="Comores" flag="🇰🇲" />
-        <ModeButton active={mode === "malacca"} onClick={() => onSwitch("malacca")} label="Malacca" flag="🇲🇾" />
+        <ModeButton active={mode === "mediterranee"} onClick={() => onSwitch("mediterranee")} label="Méditerranée" shortLabel="Med" />
+        <ModeButton active={mode === "chine"} onClick={() => onSwitch("chine")} label="Chine — France" shortLabel="CN-FR" />
+        <ModeButton active={mode === "malacca"} onClick={() => onSwitch("malacca")} label="Malacca" shortLabel="Malacca" />
       </div>
     </div>
   );
 }
 
-function ModeButton({ active, onClick, label, flag }: {
+function ModeButton({ active, onClick, label, shortLabel }: {
   active: boolean;
   onClick: () => void;
   label: string;
-  flag: string;
+  shortLabel: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer touch-manipulation"
+      className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer touch-manipulation"
       style={{
         background: active
           ? "linear-gradient(135deg, rgba(37,99,235,0.5), rgba(29,78,216,0.3))"
@@ -48,8 +48,8 @@ function ModeButton({ active, onClick, label, flag }: {
         minHeight: "36px",
       }}
     >
-      <span className="text-base sm:text-lg leading-none">{flag}</span>
-      <span className="text-[11px] sm:text-sm leading-none whitespace-nowrap">{label}</span>
+      <span className="hidden sm:inline text-sm leading-none whitespace-nowrap">{label}</span>
+      <span className="sm:hidden text-[11px] leading-none whitespace-nowrap">{shortLabel}</span>
     </button>
   );
 }
