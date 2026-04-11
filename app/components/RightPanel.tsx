@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, AlertTriangle, Clock, CheckCircle, XCircle, Send } from "lucide-react";
-import type { Dossier, DocumentStatut } from "~/types";
+import { AlertTriangle, CheckCircle, Clock, Send, X, XCircle } from "lucide-react";
+import { useState } from "react";
+import type { DocumentStatut, Dossier } from "~/types";
 
 interface RightPanelProps {
   dossier: Dossier;
@@ -94,26 +94,11 @@ export default function RightPanel({ dossier, onClose, isMobile = false }: Right
         <div>
           <span className="font-mono text-sm font-bold text-white tracking-wide">{dossier.id}</span>
           <p className="text-slate-500 text-xs mt-0.5 font-mono">{dossier.vehiculeId}</p>
-        </div>
-        <button onClick={onClose} className="text-slate-600 hover:text-slate-300 transition-colors cursor-pointer mt-0.5">
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}>
-        <div className="px-5 py-4" style={sectionDivider}>
-          <div className="space-y-2">
-            {[
-              ["Route", `${dossier.origine.nom} → ${dossier.destination.nom}`],
-              ["Départ", formatDate(dossier.depart)],
-              ["ETA", formatDate(dossier.eta)],
-              ["Fournisseur", dossier.fournisseur],
-            ].map(([label, value]) => (
-              <div key={label} className="flex justify-between text-xs">
-                <span className="text-slate-600">{label}</span>
-                <span className="text-slate-300">{value}</span>
-              </div>
-            ))}
+          <div className="mt-2 space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Route</span>
+              <span className="text-slate-300">{dossier.origine.nom} → {dossier.destination.nom}</span>
+            </div>
             <div className="flex justify-between text-xs">
               <span className="text-slate-600">Statut</span>
               <span className={`font-medium ${statutLabels[dossier.statut].className}`}>
@@ -122,26 +107,12 @@ export default function RightPanel({ dossier, onClose, isMobile = false }: Right
             </div>
           </div>
         </div>
+        <button onClick={onClose} className="text-slate-600 hover:text-slate-300 transition-colors cursor-pointer mt-0.5">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-        {dossier.alertes.length > 0 && (
-          <div className="px-5 py-4" style={sectionDivider}>
-            <p className="text-slate-600 text-xs uppercase tracking-widest font-semibold mb-3">
-              Alertes ({dossier.alertes.length})
-            </p>
-            <div className="space-y-2">
-              {dossier.alertes.map((alerte, i) => {
-                const c = alerteColors[alerte.severite];
-                return (
-                  <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg text-xs"
-                    style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
-                    <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 opacity-80" />
-                    <span>{alerte.message}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.1) transparent" }}>
 
         <div className="px-5 py-4" style={sectionDivider}>
           <div className="flex items-center justify-between mb-3">
@@ -196,7 +167,7 @@ export default function RightPanel({ dossier, onClose, isMobile = false }: Right
         </div>
 
         {missingDocs.length > 0 && (
-          <div className="px-5 py-4">
+          <div className="px-5 py-4" style={sectionDivider}>
             <button
               onClick={() => copyTemplate("__all__", buildRelanceTemplate(dossier, missingDocs.map((d) => d.libelle)))}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer"
@@ -214,6 +185,26 @@ export default function RightPanel({ dossier, onClose, isMobile = false }: Right
                 ? "Copié dans le presse-papier"
                 : `Relancer fournisseur (${missingDocs.length} doc${missingDocs.length > 1 ? "s" : ""})`}
             </button>
+          </div>
+        )}
+
+        {dossier.alertes.length > 0 && (
+          <div className="px-5 py-4">
+            <p className="text-slate-600 text-xs uppercase tracking-widest font-semibold mb-3">
+              Alertes ({dossier.alertes.length})
+            </p>
+            <div className="space-y-2">
+              {dossier.alertes.map((alerte, i) => {
+                const c = alerteColors[alerte.severite];
+                return (
+                  <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg text-xs"
+                    style={{ background: c.bg, border: `1px solid ${c.border}`, color: c.text }}>
+                    <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 opacity-80" />
+                    <span>{alerte.message}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -241,7 +232,7 @@ export default function RightPanel({ dossier, onClose, isMobile = false }: Right
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute top-14 right-0 bottom-0 z-10 flex flex-col overflow-hidden"
+      className="absolute top-14 right-0 bottom-0 z-[70] flex flex-col overflow-hidden"
       style={{ ...desktopGlass, width: "22rem" }}
     >
       {content}
